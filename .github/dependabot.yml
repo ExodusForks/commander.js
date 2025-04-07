@@ -1,12 +1,12 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    target-branch: "exodus-fork-12"
+    target-branch: "exodus-fork"
     directory: "/"
     schedule:
       interval: "monthly"
   - package-ecosystem: "github-actions"
-    target-branch: "exodus-fork-12"
+    target-branch: "exodus-fork"
     directory: "/"
     schedule:
       interval: "weekly"
