@@ -65,6 +65,7 @@ module.exports = tseslint.config(
   {
     files: [...tsconfigTsFiles, ...tsconfigJsFiles],
     rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/ban-ts-comment': [
         'error',
         {
