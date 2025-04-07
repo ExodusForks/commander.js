@@ -30,7 +30,7 @@
     "fix:lint": "eslint --fix .",
     "test": "exit 0",
     "test-all": "exit 0",
-    "test-esm": "exit 0",
+    "test-esm": "exit 0"
   },
   "files": [
     "index.js",
