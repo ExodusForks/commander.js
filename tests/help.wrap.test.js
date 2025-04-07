@@ -41,11 +41,32 @@ ${' '.repeat(10)}${'a '.repeat(5)}a`);
     expect(wrapped).toEqual(text);
   });
 
-  test('when text has line breaks then respect and indent', () => {
+  test('when text has line break then respect and indent', () => {
     const text = 'term description\nanother line';
     const helper = new commander.Help();
     const wrapped = helper.wrap(text, 78, 5);
     expect(wrapped).toEqual('term description\n     another line');
+  });
+
+  test('when text has consecutive line breaks then respect and indent', () => {
+    const text = 'term description\n\nanother line';
+    const helper = new commander.Help();
+    const wrapped = helper.wrap(text, 78, 5);
+    expect(wrapped).toEqual('term description\n\n     another line');
+  });
+
+  test('when text has Windows line break then respect and indent', () => {
+    const text = 'term description\r\nanother line';
+    const helper = new commander.Help();
+    const wrapped = helper.wrap(text, 78, 5);
+    expect(wrapped).toEqual('term description\n     another line');
+  });
+
+  test('when text has Windows consecutive line breaks then respect and indent', () => {
+    const text = 'term description\r\n\r\nanother line';
+    const helper = new commander.Help();
+    const wrapped = helper.wrap(text, 78, 5);
+    expect(wrapped).toEqual('term description\n\n     another line');
   });
 
   test('when text already formatted with line breaks and indent then do not touch', () => {
@@ -64,10 +85,12 @@ describe('wrapping by formatHelp', () => {
     const program = new commander.Command();
     program
       .configureHelp({ helpWidth: 80 })
-      .option('-x --extra-long-option-switch', 'kjsahdkajshkahd kajhsd akhds kashd kajhs dkha dkh aksd ka dkha kdh kasd ka kahs dkh sdkh askdh aksd kashdk ahsd kahs dkha skdh');
+      .option(
+        '-x --extra-long-option-switch',
+        'kjsahdkajshkahd kajhsd akhds kashd kajhs dkha dkh aksd ka dkha kdh kasd ka kahs dkh sdkh askdh aksd kashdk ahsd kahs dkha skdh',
+      );
 
-    const expectedOutput =
-`Usage:  [options]
+    const expectedOutput = `Usage:  [options]
 
 Options:
   -x --extra-long-option-switch  kjsahdkajshkahd kajhsd akhds kashd kajhs dkha
@@ -83,10 +106,13 @@ Options:
     const program = new commander.Command();
     program
       .configureHelp({ helpWidth: 80 })
-      .option('-x --extra-long-option <value>', 'kjsahdkajshkahd kajhsd akhds', 'aaa bbb ccc ddd eee fff ggg');
+      .option(
+        '-x --extra-long-option <value>',
+        'kjsahdkajshkahd kajhsd akhds',
+        'aaa bbb ccc ddd eee fff ggg',
+      );
 
-    const expectedOutput =
-`Usage:  [options]
+    const expectedOutput = `Usage:  [options]
 
 Options:
   -x --extra-long-option <value>  kjsahdkajshkahd kajhsd akhds (default: "aaa
@@ -97,15 +123,17 @@ Options:
     expect(program.helpInformation()).toBe(expectedOutput);
   });
 
-  test('when long command description then wrap and indent', () => {
+  test('when long subcommand description then wrap and indent', () => {
     const program = new commander.Command();
     program
       .configureHelp({ helpWidth: 80 })
       .option('-x --extra-long-option-switch', 'x')
-      .command('alpha', 'Lorem mollit quis dolor ex do eu quis ad insa a commodo esse.');
+      .command(
+        'alpha',
+        'Lorem mollit quis dolor ex do eu quis ad insa a commodo esse.',
+      );
 
-    const expectedOutput =
-`Usage:  [options] [command]
+    const expectedOutput = `Usage:  [options] [command]
 
 Options:
   -x --extra-long-option-switch  x
@@ -123,13 +151,13 @@ Commands:
   test('when not enough room then help not wrapped', () => {
     // Not wrapping if less than 40 columns available for wrapping.
     const program = new commander.Command();
-    const commandDescription = 'description text of very long command which should not be automatically be wrapped. Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor labore eu.';
+    const commandDescription =
+      'description text of very long command which should not be automatically be wrapped. Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor labore eu.';
     program
       .configureHelp({ helpWidth: 60 })
       .command('1234567801234567890x', commandDescription);
 
-    const expectedOutput =
-`Usage:  [options] [command]
+    const expectedOutput = `Usage:  [options] [command]
 
 Options:
   -h, --help            display help for command
@@ -142,20 +170,20 @@ Commands:
     expect(program.helpInformation()).toBe(expectedOutput);
   });
 
-  test('when option description preformatted then only add small indent', () => {
+  test('when option description pre-formatted then only add small indent', () => {
     // #396: leave custom format alone, apart from space-space indent
     const optionSpec = '-t, --time <HH:MM>';
     const program = new commander.Command();
-    program
-      .configureHelp({ helpWidth: 80 })
-      .option(optionSpec, `select time
+    program.configureHelp({ helpWidth: 80 }).option(
+      optionSpec,
+      `select time
 
 Time can also be specified using special values:
   "dawn" - From night to sunrise.
-`);
+`,
+    );
 
-    const expectedOutput =
-`Usage:  [options]
+    const expectedOutput = `Usage:  [options]
 
 Options:
   ${optionSpec}  select time
@@ -166,6 +194,26 @@ Options:
   -h, --help          display help for command
 `;
 
+    expect(program.helpInformation()).toBe(expectedOutput);
+  });
+
+  test('when command description long then wrapped', () => {
+    const program = new commander.Command();
+    program.configureHelp({ helpWidth: 80 })
+      .description(`Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor labore eu Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor labore eu
+After line break Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor labore eu Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor labore eu`);
+    const expectedOutput = `Usage:  [options]
+
+Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor labore
+eu Do fugiat eiusmod ipsum laboris excepteur pariatur sint ullamco tempor
+labore eu
+After line break Do fugiat eiusmod ipsum laboris excepteur pariatur sint
+ullamco tempor labore eu Do fugiat eiusmod ipsum laboris excepteur pariatur
+sint ullamco tempor labore eu
+
+Options:
+  -h, --help  display help for command
+`;
     expect(program.helpInformation()).toBe(expectedOutput);
   });
 });
